@@ -1,0 +1,3 @@
+[submodule "externals/ear"]
+	path = externals/ear
+	url = https://github.com/borcun/ear.git
