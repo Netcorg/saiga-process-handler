@@ -1,7 +1,14 @@
-#include <unistd.h>
 #include "saiga_process_handler.h"
 #include "sched/scheduler.h"
 #include "spdlog/spdlog.h"
+
+#ifdef WIN32
+#include <windows.h>
+#define SAIGA_SLEEP(sec) Sleep((sec) * 1000)
+#else
+#include <unistd.h>
+#define SAIGA_SLEEP(sec) sleep((sec))
+#endif
 
 int main() {
   EAR::Schedule::Scheduler scheduler("saiga-scheduler");
@@ -11,7 +18,9 @@ int main() {
   
   scheduler.allocate(&process_handler, 1000000U, 0U);
   scheduler.start();
-  sleep(10);
+  
+  SAIGA_SLEEP(10);
+
   scheduler.stop();
   
   return 0;
