@@ -1,0 +1,6 @@
+*TODO
+- create a DatabaseManager that performs sqlite3 operations such as getting Process instace to insert into the table, or update the table
+- implement cycle function of SaigaProcessHandler to get current process list from the OS, and drive DatabaseManager class
+- add cURL into the repo to transfer data stored into the database to server, or Qt UI project
+- define JSON data formats between Qt and standalone process handler
+- create a Qt UI project that includes standalone process handler
