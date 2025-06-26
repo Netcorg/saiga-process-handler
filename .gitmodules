@@ -1,3 +1,6 @@
 [submodule "externals/ear"]
 	path = externals/ear
 	url = https://github.com/borcun/ear.git
+[submodule "externals/curl"]
+	path = externals/curl
+	url = https://github.com/curl/curl.git
