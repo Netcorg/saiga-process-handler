@@ -26,7 +26,6 @@ namespace Saiga {
     bool open(const std::string &db_file);
     bool close(void);
     bool insert(const Process &process);
-    bool fetchAll(std::vector<Process> &process_list);
     bool fetch(std::vector<DatabaseEntry> &entry_list, const uint32_t start_time, const uint32_t end_time);
    
   private:

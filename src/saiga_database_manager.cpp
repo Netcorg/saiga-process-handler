@@ -96,27 +96,6 @@ bool Saiga::DatabaseManager::insert(const Saiga::Process &process) {
   return true;
 }
 
-bool Saiga::DatabaseManager::fetchAll(std::vector<Saiga::Process> &process_list) {
-  if (nullptr == m_database) {
-    spdlog::error("could not fetch process into database that is not opened yet");
-    return false;
-  }
-
-  char *err_msg = nullptr;
-  std::string query = "select * from process";
-  
-  if (SQLITE_OK != sqlite3_exec(m_database, query.c_str(), fetch_list_callback, &process_list, &err_msg)) {
-    spdlog::error("insertion to database failed, {}", err_msg);
-    return false;
-  }
-
-  for (auto process : process_list) {
-    spdlog::debug("process: {}", process.toString());
-  }
-
-  return true;
-}
-
 bool Saiga::DatabaseManager::fetch(std::vector<Saiga::DatabaseEntry> &entry_list, const uint32_t start_time, const uint32_t end_time) {
   if (nullptr == m_database) {
     spdlog::error("could not fetch process into database that is not opened yet");
@@ -149,7 +128,7 @@ bool Saiga::DatabaseManager::fetch(std::vector<Saiga::DatabaseEntry> &entry_list
            AND app1.ppid = app2.ppid
            AND app1.app_name = app2.app_name
     )
-    GROUP BY app_name;)";
+    GROUP BY app_name ORDER BY duration;)";
 
   sqlite3_stmt* stmt = nullptr;
 
