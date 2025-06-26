@@ -11,7 +11,7 @@
 #include "saiga_database_manager.h"
 #include "saiga_endpoint.h"
 
-namespace Saiga {
+namespace Saiga {  
   /// process handler application class
   class ProcessHandler : public EAR::Schedule::Task {
   public:
@@ -46,5 +46,11 @@ namespace Saiga {
     /// function that handles alive or dead process at OS level
     /// @param [in] process_list - process list
     void handleProcess(std::vector<Process> &process_list);
+
+    struct ProcessHandlerPreferences {
+      std::string db_file;
+      EndpointConfiguration endpoint_config;
+    } m_preferences;
+
   };
 }

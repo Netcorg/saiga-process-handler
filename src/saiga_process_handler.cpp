@@ -19,18 +19,22 @@ Saiga::ProcessHandler::~ProcessHandler() {
 }
 
 bool Saiga::ProcessHandler::configure(const std::string &config_file) {
-  return false;
+  m_preferences.db_file = "db/saiga.db";
+
+  /// @todo set endpoint configuration from config file, for now they're defauilt values
+  
+  return true;
 }
 
 bool Saiga::ProcessHandler::initialize(void) {
   m_database_manager = Saiga::DatabaseManager::getInstance();
 
-  if (!m_database_manager->open("db/saiga.db")) {
+  if (!m_database_manager->open(m_preferences.db_file)) {
     spdlog::error("could initialize database");
     return false;
   }
 
-  if (!m_endpoint.initialize()) {
+  if (!m_endpoint.initialize(m_preferences.endpoint_config)) {
     spdlog::error("could initialize endpoint");
     return false;
   }
@@ -50,7 +54,7 @@ void Saiga::ProcessHandler::cycle(void)  {
   m_database_manager->insert(process_list);
   m_database_manager->fetch(filtered_process_list, 0, 999999999);
   toJSON(filtered_process_list, json_text);
-  // m_endpoint.transmit(json_text);
+  m_endpoint.transmit(json_text);
 
   spdlog::debug("json text: {}", json_text);
   

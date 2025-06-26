@@ -8,9 +8,9 @@
 #include <cstdint>
 #include <string>
 
-#define EP_CONFIG_DEF_IP_ADDRESS  ("")
-#define EP_CONFIG_DEF_PORT_NUMBER (0U)
-#define EP_CONFIG_DEF_EXTENSION   ("saiga-server")
+#define EP_CONFIG_DEF_IP_ADDRESS  ("127.0.0.1")
+#define EP_CONFIG_DEF_PORT_NUMBER (6666U)
+#define EP_CONFIG_DEF_EXTENSION   ("saiga-ui")
 #define EP_CONFIG_DEF_TIMEOUT     (10L)
 #define EP_CONFIG_DEF_VERBOSE     (1L)
 #define EP_CONFIG_DEF_TOKEN       ("")
@@ -49,7 +49,7 @@ namespace Saiga {
     /// verbose flag
     long verbose = EP_CONFIG_DEF_VERBOSE;
     /// protocol type
-    HTTPProtocol protocol = PROTOCOL_HTTPS;
+    HTTPProtocol protocol = PROTOCOL_HTTP;
     /// token
     std::string token = EP_CONFIG_DEF_TOKEN;
   };

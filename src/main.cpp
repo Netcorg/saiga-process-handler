@@ -15,6 +15,13 @@ int main() {
   Saiga::ProcessHandler process_handler("saiga-process-handler");
   
   spdlog::set_level(spdlog::level::debug);
+
+  /// @todo pass valid configuration file path
+  if (!process_handler.configure("")) {
+    spdlog::error("could not configure process handler");
+    return -1;
+  }
+  
   scheduler.allocate(&process_handler, 1000000U, 0U);
 
   scheduler.start(); 
