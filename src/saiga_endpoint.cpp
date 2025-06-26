@@ -35,15 +35,12 @@ bool Saiga::Endpoint::initialize(const Saiga::EndpointConfiguration &config) {
       else {
         m_header = curl_slist_append(m_header, "Content-Type: application/json");
 
-	/*
         if (!config.token.empty()) {
           std::string bearer_header = "Authorization: Bearer " + config.token;
           m_header = curl_slist_append(m_header, bearer_header.c_str());
         }
-	*/
 
         curl_easy_setopt(m_curl, CURLOPT_HTTPHEADER, m_header);
-	/*
         curl_easy_setopt(m_curl, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_2TLS);
 
         if (PROTOCOL_HTTPS == config.protocol) {
@@ -51,7 +48,6 @@ bool Saiga::Endpoint::initialize(const Saiga::EndpointConfiguration &config) {
           curl_easy_setopt(m_curl, CURLOPT_SSL_VERIFYPEER, 0L);
           curl_easy_setopt(m_curl, CURLOPT_SSL_VERIFYHOST, 0L);
         }
-	*/
 	
         is_connected = true;
       }
