@@ -96,7 +96,7 @@ bool Saiga::DatabaseManager::insert(const Saiga::Process &process) {
   return true;
 }
 
-bool Saiga::DatabaseManager::fetch(std::vector<Saiga::Process> &process_list) {
+bool Saiga::DatabaseManager::fetchAll(std::vector<Saiga::Process> &process_list) {
   if (nullptr == m_database) {
     spdlog::error("could not fetch process into database that is not opened yet");
     return false;
@@ -105,8 +105,6 @@ bool Saiga::DatabaseManager::fetch(std::vector<Saiga::Process> &process_list) {
   char *err_msg = nullptr;
   std::string query = "select * from process";
   
-  spdlog::debug("query string: {}", query);
-
   if (SQLITE_OK != sqlite3_exec(m_database, query.c_str(), fetch_list_callback, &process_list, &err_msg)) {
     spdlog::error("insertion to database failed, {}", err_msg);
     return false;
@@ -114,6 +112,69 @@ bool Saiga::DatabaseManager::fetch(std::vector<Saiga::Process> &process_list) {
 
   for (auto process : process_list) {
     spdlog::debug("process: {}", process.toString());
+  }
+
+  return true;
+}
+
+bool Saiga::DatabaseManager::fetch(std::vector<Saiga::DatabaseEntry> &entry_list, const uint32_t start_time, const uint32_t end_time) {
+  if (nullptr == m_database) {
+    spdlog::error("could not fetch process into database that is not opened yet");
+    return false;
+  }
+
+  if (start_time >= end_time) {
+    spdlog::error("invalid range values start is {}, end is {}", start_time, end_time);
+    return false;
+  }  
+
+  const char *query = R"(
+    SELECT
+        app_name,
+        COUNT(*) AS session_count,
+        SUM(duration) AS total_duration
+    FROM (
+        SELECT
+            app1.app_name,
+            (app2.end_time - app1.start_time) AS duration
+        FROM
+            (SELECT pid, ppid, app_name, time AS start_time
+             FROM process
+             WHERE state = 1 AND time > ?) AS app1
+        JOIN
+            (SELECT pid, ppid, app_name, time AS end_time
+             FROM process
+             WHERE state = 2 AND time < ?) AS app2
+        ON app1.pid = app2.pid
+           AND app1.ppid = app2.ppid
+           AND app1.app_name = app2.app_name
+    )
+    GROUP BY app_name;)";
+
+  sqlite3_stmt* stmt = nullptr;
+
+  if (SQLITE_OK != sqlite3_prepare_v2(m_database, query, -1, &stmt, nullptr)) {
+    spdlog::error("could not prepare query, error is {}", sqlite3_errmsg(m_database));
+    return false;
+  }
+ 
+  char *err_msg = nullptr;
+
+  sqlite3_bind_int(stmt, 1, start_time);
+  sqlite3_bind_int(stmt, 2, end_time);
+
+  while (sqlite3_step(stmt) == SQLITE_ROW) {
+    DatabaseEntry entry;
+    
+    entry.app_name = reinterpret_cast<const char *>(sqlite3_column_text(stmt, 0));
+    entry.session_count = sqlite3_column_int(stmt, 1);
+    entry.duration = sqlite3_column_int(stmt, 2);
+
+    entry_list.push_back(entry);
+  }
+  
+  for (auto entry : entry_list) {
+    spdlog::debug("entry: {}, {}, {}", entry.app_name, entry.session_count, entry.duration);
   }
 
   return true;

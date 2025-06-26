@@ -15,8 +15,7 @@ int main() {
   EAR::Schedule::Scheduler scheduler("saiga-scheduler");
   Saiga::ProcessHandler process_handler("saiga-process-handler");
   Saiga::DatabaseManager *database_manager = Saiga::DatabaseManager::getInstance();
-  Saiga::Process process;
-  std::vector<Saiga::Process> process_list;
+  std::vector<Saiga::DatabaseEntry> entry_list;
   
   spdlog::set_level(spdlog::level::debug);
 
@@ -27,25 +26,11 @@ int main() {
 
   spdlog::info("database opened");
   
-  process.pid = 101;
-  process.ppid = 202;
-  process.app_name = "Sample Application 2";
-  process.title = "Sample Title 2";
-  process.time = "123456789";
-  process.state = Saiga::ProcessState::CREATED;
-  
-  if (!database_manager->insert(process)) {
-    spdlog::error("could not insert process into database");
-  }
-  else {
-    spdlog::info("process inserted into database");
-  }
-
-  if (!database_manager->fetch(process_list)) {
+  if (!database_manager->fetch(entry_list, 0, 999999999)) {
     spdlog::error("could not fetch process list");
   }
   else {
-    spdlog::info("process fetched from database");
+    spdlog::info("entries fetched from database");
   }
 
   scheduler.allocate(&process_handler, 1000000U, 0U);
