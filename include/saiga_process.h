@@ -41,6 +41,9 @@ namespace Saiga {
     /// @param [in] Process - Process instance
     /// @return true if two objects are not same, otherwise false
     bool operator!=(const Process& process) const;
+    /// function that converts Process instance to string
+    /// @return instance in string format
+    std::string toString(void) const;
     
     /// process id
     uint32_t pid = 0;

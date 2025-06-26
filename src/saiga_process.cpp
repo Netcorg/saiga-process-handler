@@ -1,3 +1,4 @@
+#include <sstream>
 #include "saiga_process.h"
 
 Saiga::Process::Process(void) {
@@ -43,9 +44,22 @@ Saiga::Process &Saiga::Process::operator=(Saiga::Process &&process) {
 }
 
 bool Saiga::Process::operator==(const Saiga::Process& process) const {
-  return pid == process.pid && ppid == process.ppid;
+  return pid == process.pid && ppid == process.ppid && 0 == app_name.compare(process.app_name);
 }
 
 bool Saiga::Process::operator!=(const Saiga::Process& process) const {
   return !(*this == process);
+}
+
+std::string Saiga::Process::toString(void) const {
+  std::stringstream ss;
+
+  ss << pid << ", " <<
+    ppid << ", " <<
+    app_name << ", " <<
+    title << ", " <<
+    time << ", " <<
+    (int) state;
+
+  return ss.str();
 }
