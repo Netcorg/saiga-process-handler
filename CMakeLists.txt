@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.15)
-project(saiga)
+project(saiga-process-handler VERSION 1.0.0 LANGUAGES CXX DESCRIPTION "Netcorg Production")
 
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -36,6 +36,7 @@ set(SPDLOG_BUILD_SHARED OFF CACHE BOOL "" FORCE)
 add_subdirectory(externals/ear)
 add_subdirectory(externals/sqlite3)
 add_subdirectory(externals/curl)
+add_subdirectory(externals/rapidjson)
 
 target_include_directories(${PROJECT_NAME} PUBLIC
   include
@@ -43,6 +44,7 @@ target_include_directories(${PROJECT_NAME} PUBLIC
   externals/ear/include
   externals/sqlite3
   externals/curl/include
+  externals/rapidjson/include
 )
 
 target_link_directories(${PROJECT_NAME} PUBLIC

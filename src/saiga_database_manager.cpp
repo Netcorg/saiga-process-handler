@@ -96,7 +96,19 @@ bool Saiga::DatabaseManager::insert(const Saiga::Process &process) {
   return true;
 }
 
-bool Saiga::DatabaseManager::fetch(std::vector<Saiga::DatabaseEntry> &entry_list, const uint32_t start_time, const uint32_t end_time) {
+bool Saiga::DatabaseManager::insert(const std::vector<Saiga::Process> &process_list) {
+  bool is_inserted = true;
+  
+  for (auto process : process_list) {
+    is_inserted = is_inserted & insert(process);
+  }
+
+  // if there is not process to be inserted, it means valid insertion
+  // or if there is merely one insertion failed, it means invalid insertion
+  return is_inserted;
+}
+
+bool Saiga::DatabaseManager::fetch(std::vector<Saiga::FilteredProcess> &process_list, const uint32_t start_time, const uint32_t end_time) {
   if (nullptr == m_database) {
     spdlog::error("could not fetch process into database that is not opened yet");
     return false;
@@ -143,17 +155,17 @@ bool Saiga::DatabaseManager::fetch(std::vector<Saiga::DatabaseEntry> &entry_list
   sqlite3_bind_int(stmt, 2, end_time);
 
   while (sqlite3_step(stmt) == SQLITE_ROW) {
-    DatabaseEntry entry;
+    FilteredProcess process;
     
-    entry.app_name = reinterpret_cast<const char *>(sqlite3_column_text(stmt, 0));
-    entry.session_count = sqlite3_column_int(stmt, 1);
-    entry.duration = sqlite3_column_int(stmt, 2);
+    process.app_name = reinterpret_cast<const char *>(sqlite3_column_text(stmt, 0));
+    process.session_count = sqlite3_column_int(stmt, 1);
+    process.duration = sqlite3_column_int(stmt, 2);
 
-    entry_list.push_back(entry);
+    process_list.push_back(process);
   }
   
-  for (auto entry : entry_list) {
-    spdlog::debug("entry: {}, {}, {}", entry.app_name, entry.session_count, entry.duration);
+  for (auto process : process_list) {
+    spdlog::debug("process: {}, {}, {}", process.app_name, process.session_count, process.duration);
   }
 
   return true;
