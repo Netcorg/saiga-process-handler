@@ -5,7 +5,12 @@ set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-set(SOURCES src/saiga_process.cpp src/saiga_process_handler.cpp src/main.cpp)
+set(SOURCES
+  src/saiga_process.cpp
+  src/saiga_process_handler.cpp
+  src/saiga_database_manager.cpp
+  src/main.cpp
+)
 
 add_executable(${PROJECT_NAME} ${SOURCES} include/saiga_process.h include/saiga_process_handler.h)
 add_subdirectory(externals/ear)
