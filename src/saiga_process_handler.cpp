@@ -50,10 +50,14 @@ void Saiga::ProcessHandler::cycle(void)  {
   std::vector<FilteredProcess> filtered_process_list;
   std::string json_text;
 
+  // handle process and put into database
   handleProcess(process_list);
+  /// @todo insert into database if the process is created or killed
   m_database_manager->insert(process_list);
+  // fetch database filtered, and convert to JSON
   m_database_manager->fetch(filtered_process_list, 0, 999999999);
   toJSON(filtered_process_list, json_text);
+  // send to server
   m_endpoint.transmit(json_text);
 
   spdlog::debug("json text: {}", json_text);
