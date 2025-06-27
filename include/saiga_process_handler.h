@@ -5,7 +5,7 @@
 
 #pragma once
 
-#include <vector>
+#include <map>
 #include "sched/task.h"
 #include "saiga_process.h"
 #include "saiga_database_manager.h"
@@ -14,7 +14,6 @@
 namespace Saiga {
   /// instant process type that is visualized
   struct InstantProcess {
-    uint32_t pid;
     std::string name;
     uint32_t duration;
   };
@@ -40,16 +39,16 @@ namespace Saiga {
 
   private:
     /// current process list
-    std::vector<Process> m_current_process_list;
+    std::map<uint32_t, Process> m_current_process_list;
     /// databaase manager
     DatabaseManager *m_database_manager;
     /// endpoint
     Endpoint m_endpoint;
 
-    /// function that converts filtered process list to json object
+    /// function that converts instant process list to json object
     /// @param [in] process_list - filtered process list
     /// @param [out] json_text - json output
-    void toJSON(const std::vector<InstantProcess> &process_list, std::string &json_text);
+    void toJSON(const std::map<uint32_t, InstantProcess> &process_list, std::string &json_text);
 
     /// preferences type
     struct ProcessHandlerPreferences {

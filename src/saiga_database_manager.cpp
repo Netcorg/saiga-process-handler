@@ -1,5 +1,8 @@
 #include <sstream>
 #include "saiga_database_manager.h"
+#include "rapidjson/document.h"
+#include "rapidjson/prettywriter.h"
+#include "rapidjson/stringbuffer.h"
 #include "spdlog/spdlog.h"
 
 static int empty_callback(void *param, int argc, char **argv, char **col_name) {
@@ -108,7 +111,7 @@ bool Saiga::DatabaseManager::insert(const std::vector<Saiga::Process> &process_l
   return is_inserted;
 }
 
-bool Saiga::DatabaseManager::fetch(std::vector<Saiga::FilteredProcess> &process_list, const uint32_t start_time, const uint32_t end_time) {
+bool Saiga::DatabaseManager::fetch(std::vector<Saiga::RefinedProcess> &process_list, const uint32_t start_time, const uint32_t end_time) {
   if (nullptr == m_database) {
     spdlog::error("could not fetch process into database that is not opened yet");
     return false;
@@ -155,7 +158,7 @@ bool Saiga::DatabaseManager::fetch(std::vector<Saiga::FilteredProcess> &process_
   sqlite3_bind_int(stmt, 2, end_time);
 
   while (sqlite3_step(stmt) == SQLITE_ROW) {
-    FilteredProcess process;
+    RefinedProcess process;
     
     process.name = reinterpret_cast<const char *>(sqlite3_column_text(stmt, 0));
     process.session_count = sqlite3_column_int(stmt, 1);
@@ -171,7 +174,7 @@ bool Saiga::DatabaseManager::fetch(std::vector<Saiga::FilteredProcess> &process_
   return true;
 }
 
-void Saiga::DatabaseManager::toJSON(const std::vector<Saiga::FilteredProcess> &process_list, std::string &json_text) {
+void Saiga::DatabaseManager::toJSON(const std::vector<Saiga::RefinedProcess> &process_list, std::string &json_text) {
   rapidjson::Value object_list(rapidjson::kArrayType);
   rapidjson::Document document;
 

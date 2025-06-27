@@ -36,7 +36,7 @@ static BOOL CALLBACK enumProcess(HWND hwnd, LPARAM lParam) {
     return TRUE;
   }
 
-  std::vector<Saiga::Process> *process_list = (std::vector<Saiga::Process> *) lParam;
+  std::map<uint32_t, Saiga::Process> *process_list = (std::map<uint32_t, Saiga::Process> *) lParam;
 
   const int length = GetWindowTextLength(hwnd);
   std::vector<wchar_t> window_title(length + 1);
@@ -72,7 +72,7 @@ static BOOL CALLBACK enumProcess(HWND hwnd, LPARAM lParam) {
   process.time_tag = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
   process.state = Saiga::ProcessState::CREATED;
   
-  process_list->push_back(process);
+  process_list->insert({process_id, process});
 
   return TRUE;
 }
@@ -117,15 +117,29 @@ bool Saiga::ProcessHandler::initialize(void) {
 
 
 void Saiga::ProcessHandler::cycle(void)  {
-  std::vector<Process> process_list;
-  std::vector<InstantProcess> instant_process_list;
+  std::map<uint32_t, Process> process_list;
+  std::map<uint32_t, InstantProcess> instant_process_list;
   std::string json_text;
 
   // handle process and put into database
   EnumWindows(enumProcess, (LPARAM) &process_list);
 
-  for (auto process: process_list) {
-    spdlog::debug("{}", process.toString());
+  for (auto it = m_current_process_list.begin(); m_current_process_list.end() != it; ++it) {
+    if (process_list.end() == process_list.find(it->first)) {
+      InstantProcess instant_process;
+
+      instant_process.name = it->second.name;
+      instant_process.duration = it->second.time_tag - duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
+
+      instant_process_list.insert({it->first, instant_process});
+      m_current_process_list.erase(it);
+    }
+  }
+
+  for (auto it = process_list.begin(); process_list.end() != it; ++it) {
+    if (m_current_process_list.end() == m_current_process_list.find(it->first)) {
+      m_current_process_list.insert({it->first, it->second});
+    }
   }
 
   /// @todo fill instant_process_list from process list and current process list
@@ -137,17 +151,23 @@ void Saiga::ProcessHandler::cycle(void)  {
   // fetch database filtered, and convert to JSON
   /// @todo fetch will be done if a request is arrived from the server
   // m_database_manager->fetch(instant_process_list, 0, 999999999);
-  
-  // toJSON(instant_process_list, json_text);
-  // send to server
-  // m_endpoint.transmit(json_text);
 
+  if (0 < instant_process_list.size()) {
+    toJSON(instant_process_list, json_text);
+    // send to server
+    m_endpoint.transmit(json_text);
+
+    for (auto it = instant_process_list.begin(); it != instant_process_list.end(); ++it) {
+      spdlog::debug("{} - {}", it->second.name, it->second.duration);
+    }
+  }
+  
   // spdlog::debug("json text: {}", json_text);
   
   return;
 } 
 
-void Saiga::ProcessHandler::toJSON(const std::vector<Saiga::InstantProcess> &process_list, std::string &json_text) {
+void Saiga::ProcessHandler::toJSON(const std::map<uint32_t, Saiga::InstantProcess> &process_list, std::string &json_text) {
   rapidjson::Value object_list(rapidjson::kArrayType);
   rapidjson::Document document;
 
@@ -156,12 +176,12 @@ void Saiga::ProcessHandler::toJSON(const std::vector<Saiga::InstantProcess> &pro
   
   rapidjson::Document::AllocatorType &allocator = document.GetAllocator();
   
-  for (auto process : process_list) {
+  for (auto it = process_list.begin(); it != process_list.end(); ++it) {
     rapidjson::Value object(rapidjson::kObjectType);
 
-    object.AddMember("pid", process.pid, allocator);
-    object.AddMember("name", rapidjson::Value().SetString(process.name.c_str(), allocator), allocator);
-    object.AddMember("duration", process.duration, allocator);
+    object.AddMember("pid", it->first, allocator);
+    object.AddMember("name", rapidjson::Value().SetString(it->second.name.c_str(), allocator), allocator);
+    object.AddMember("duration", it->second.duration, allocator);
 
     object_list.PushBack(object, allocator);
   }

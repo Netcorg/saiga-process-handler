@@ -25,7 +25,7 @@ int main() {
   scheduler.allocate(&process_handler, 1000000U, 0U);
 
   scheduler.start(); 
-  SAIGA_SLEEP(2);
+  SAIGA_SLEEP(10);
   scheduler.stop();
   
   return 0;

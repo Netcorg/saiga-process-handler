@@ -12,11 +12,11 @@ def put_response():
     process_list = data.get("process_list", [])
     
     for process in process_list:
+        pid = process.get("pid")
         name = process.get("name")
-        session_count = process.get("count")
         duration = process.get("duration")
 
-        print(f"name: {name}, session count: {session_count}, duration: {duration}")
+        print(f"pid: {pid} name: {name}, duration: {duration}")
          
     return jsonify({"status": "ok"})
 
