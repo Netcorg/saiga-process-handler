@@ -170,3 +170,33 @@ bool Saiga::DatabaseManager::fetch(std::vector<Saiga::FilteredProcess> &process_
 
   return true;
 }
+
+void Saiga::DatabaseManager::toJSON(const std::vector<Saiga::FilteredProcess> &process_list, std::string &json_text) {
+  rapidjson::Value object_list(rapidjson::kArrayType);
+  rapidjson::Document document;
+
+  document.SetObject();
+  json_text.clear();
+  
+  rapidjson::Document::AllocatorType &allocator = document.GetAllocator();
+  
+  for (auto process : process_list) {
+    rapidjson::Value object(rapidjson::kObjectType);
+
+    object.AddMember("name", rapidjson::Value().SetString(process.name.c_str(), allocator), allocator);
+    object.AddMember("count", process.session_count, allocator);
+    object.AddMember("duration", process.duration, allocator);
+
+    object_list.PushBack(object, allocator);
+  }
+
+  document.AddMember("process_list", object_list, allocator);
+
+  rapidjson::StringBuffer buffer;
+  rapidjson::PrettyWriter<rapidjson::StringBuffer> writer(buffer);
+
+  document.Accept(writer);
+  json_text = buffer.GetString();
+
+  return;
+}

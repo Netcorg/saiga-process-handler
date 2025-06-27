@@ -11,7 +11,14 @@
 #include "saiga_database_manager.h"
 #include "saiga_endpoint.h"
 
-namespace Saiga {  
+namespace Saiga {
+  /// instant process type that is visualized
+  struct InstantProcess {
+    uint32_t pid;
+    std::string name;
+    uint32_t duration;
+  };
+  
   /// process handler application class
   class ProcessHandler : public EAR::Schedule::Task {
   public:
@@ -42,7 +49,7 @@ namespace Saiga {
     /// function that converts filtered process list to json object
     /// @param [in] process_list - filtered process list
     /// @param [out] json_text - json output
-    void toJSON(const std::vector<FilteredProcess> &process_list, std::string &json_text);
+    void toJSON(const std::vector<InstantProcess> &process_list, std::string &json_text);
 
     /// preferences type
     struct ProcessHandlerPreferences {
@@ -51,6 +58,5 @@ namespace Saiga {
       /// endpoint configuration
       EndpointConfiguration endpoint_config;
     } m_preferences;
-
   };
 }

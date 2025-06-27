@@ -118,7 +118,7 @@ bool Saiga::ProcessHandler::initialize(void) {
 
 void Saiga::ProcessHandler::cycle(void)  {
   std::vector<Process> process_list;
-  std::vector<FilteredProcess> filtered_process_list;
+  std::vector<InstantProcess> instant_process_list;
   std::string json_text;
 
   // handle process and put into database
@@ -127,6 +127,8 @@ void Saiga::ProcessHandler::cycle(void)  {
   for (auto process: process_list) {
     spdlog::debug("{}", process.toString());
   }
+
+  /// @todo fill instant_process_list from process list and current process list
   
   /// @todo insert into database if the process is created or killed
   /// it will be on other thread not to delay processing here
@@ -134,18 +136,18 @@ void Saiga::ProcessHandler::cycle(void)  {
   
   // fetch database filtered, and convert to JSON
   /// @todo fetch will be done if a request is arrived from the server
-  m_database_manager->fetch(filtered_process_list, 0, 999999999);
+  // m_database_manager->fetch(instant_process_list, 0, 999999999);
   
-  toJSON(filtered_process_list, json_text);
+  // toJSON(instant_process_list, json_text);
   // send to server
-  m_endpoint.transmit(json_text);
+  // m_endpoint.transmit(json_text);
 
-  spdlog::debug("json text: {}", json_text);
+  // spdlog::debug("json text: {}", json_text);
   
   return;
 } 
 
-void Saiga::ProcessHandler::toJSON(const std::vector<Saiga::FilteredProcess> &process_list, std::string &json_text) {
+void Saiga::ProcessHandler::toJSON(const std::vector<Saiga::InstantProcess> &process_list, std::string &json_text) {
   rapidjson::Value object_list(rapidjson::kArrayType);
   rapidjson::Document document;
 
@@ -157,8 +159,8 @@ void Saiga::ProcessHandler::toJSON(const std::vector<Saiga::FilteredProcess> &pr
   for (auto process : process_list) {
     rapidjson::Value object(rapidjson::kObjectType);
 
+    object.AddMember("pid", process.pid, allocator);
     object.AddMember("name", rapidjson::Value().SetString(process.name.c_str(), allocator), allocator);
-    object.AddMember("count", process.session_count, allocator);
     object.AddMember("duration", process.duration, allocator);
 
     object_list.PushBack(object, allocator);

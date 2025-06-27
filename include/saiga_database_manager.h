@@ -12,12 +12,11 @@
 #include "saiga_process.h"
 
 namespace Saiga {
-  /// filtered process type that is visualized
-  class FilteredProcess {
-  public:
+  /// refined process type that is visualized
+  struct RefinedProcess {
     std::string name;
-    uint32_t session_count = 0U;
-    uint32_t duration = 0U;
+    uint32_t session_count;
+    uint32_t duration;
   };
   
   class DatabaseManager {
@@ -47,8 +46,12 @@ namespace Saiga {
     /// @parma [in] start_time - start time for process into the table
     /// @parma [in] end_time - end time for process into the table
     /// @return true if process list is fetched, otherwise false
-    bool fetch(std::vector<FilteredProcess> &process_list, const uint32_t start_time, const uint32_t end_time);
-   
+    bool fetch(std::vector<RefinedProcess> &process_list, const uint32_t start_time, const uint32_t end_time);
+    /// function that converts refined process list to json object
+    /// @param [in] process_list - refined process list
+    /// @param [out] json_text - json output
+    void toJSON(const std::vector<RefinedProcess> &process_list, std::string &json_text);
+
   private:
     /// class instance
     static DatabaseManager *m_instance;
