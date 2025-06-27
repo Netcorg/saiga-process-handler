@@ -47,14 +47,14 @@ namespace Saiga {
     
     /// process id
     uint32_t pid = 0;
-    /// parent process id
-    uint32_t ppid = 0;
-    /// application name
-    std::string app_name;
+    /// window handler
+    uint64_t hwnd = 0U;
+    /// time tag when state changes
+    int64_t time_tag = -1;
+    /// name
+    std::string name;
     /// title
     std::string title;
-    /// time
-    std::string time;
     /// state
     ProcessState state = ProcessState::NONE;
   };

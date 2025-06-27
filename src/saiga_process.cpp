@@ -20,10 +20,10 @@ Saiga::Process::~Process() {
 Saiga::Process &Saiga::Process::operator=(const Saiga::Process &process) {
   if (this != &process) {
     pid = process.pid;
-    ppid = process.ppid;
-    app_name = process.app_name;
+    hwnd = process.hwnd;
+    time_tag = process.time_tag;
+    name = process.name;
     title = process.title;
-    time = process.time;
     state = process.state;
   }
 
@@ -33,10 +33,10 @@ Saiga::Process &Saiga::Process::operator=(const Saiga::Process &process) {
 Saiga::Process &Saiga::Process::operator=(Saiga::Process &&process) {
   if (this != &process) {
     pid = std::move(process.pid);
-    ppid = std::move(process.ppid);
-    app_name = std::move(process.app_name);
+    hwnd = std::move(process.hwnd);
+    time_tag = std::move(process.time_tag);
+    name = std::move(process.name);
     title = std::move(process.title);
-    time = std::move(process.time);
     state = std::move(process.state);
   }
 
@@ -44,7 +44,7 @@ Saiga::Process &Saiga::Process::operator=(Saiga::Process &&process) {
 }
 
 bool Saiga::Process::operator==(const Saiga::Process& process) const {
-  return pid == process.pid && ppid == process.ppid && 0 == app_name.compare(process.app_name);
+  return pid == process.pid && hwnd == process.hwnd && 0 == name.compare(process.name);
 }
 
 bool Saiga::Process::operator!=(const Saiga::Process& process) const {
@@ -55,10 +55,10 @@ std::string Saiga::Process::toString(void) const {
   std::stringstream ss;
 
   ss << pid << ", " <<
-    ppid << ", " <<
-    app_name << ", " <<
+    hwnd << ", " <<
     title << ", " <<
-    time << ", " <<
+    name << ", " <<
+    time_tag << ", " <<
     (int) state;
 
   return ss.str();

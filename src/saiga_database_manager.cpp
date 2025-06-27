@@ -16,10 +16,10 @@ static int fetch_list_callback(void *param, int argc, char **argv, char **col_na
   Saiga::Process process;
   
   process.pid = std::stoi(argv[0]);
-  process.ppid = std::stoi(argv[1]);
-  process.app_name = argv[2];
-  process.title = argv[3];
-  process.time = argv[4];
+  process.hwnd = std::stoi(argv[1]);
+  process.time_tag = std::stoi(argv[2]);
+  process.name = argv[3];
+  process.title = argv[4];
   process.state = (Saiga::ProcessState) std::stoi(argv[5]);
 
   process_list->push_back(process);
@@ -80,10 +80,10 @@ bool Saiga::DatabaseManager::insert(const Saiga::Process &process) {
 
   query << "INSERT INTO process VALUES (\'" <<
     std::to_string(process.pid) << "\', \'" <<
-    std::to_string(process.ppid) << "\', \'" <<
-    process.app_name << "\', \'" <<
+    std::to_string(process.hwnd) << "\', \'" <<
+    process.time_tag << "\', \'" <<
+    process.name << "\', \'" <<
     process.title << "\', \'" <<
-    process.time << "\', \'" <<
     (ProcessState::CREATED == process.state ? "1\');" : "2\');");
 			    
   spdlog::debug("query string: {}", query.str());
@@ -121,26 +121,26 @@ bool Saiga::DatabaseManager::fetch(std::vector<Saiga::FilteredProcess> &process_
 
   const char *query = R"(
     SELECT
-        app_name,
+        name,
         COUNT(*) AS session_count,
         SUM(duration) AS total_duration
     FROM (
         SELECT
-            app1.app_name,
+            app1.name,
             (app2.end_time - app1.start_time) AS duration
         FROM
-            (SELECT pid, ppid, app_name, time AS start_time
+            (SELECT pid, hwnd, name, time_tag AS start_time
              FROM process
-             WHERE state = 1 AND time > ?) AS app1
+             WHERE state = 1 AND time_tag > ?) AS app1
         JOIN
-            (SELECT pid, ppid, app_name, time AS end_time
+            (SELECT pid, hwnd, name, time_tag AS end_time
              FROM process
-             WHERE state = 2 AND time < ?) AS app2
+             WHERE state = 2 AND time_tag < ?) AS app2
         ON app1.pid = app2.pid
-           AND app1.ppid = app2.ppid
-           AND app1.app_name = app2.app_name
+           AND app1.hwnd = app2.hwnd
+           AND app1.name = app2.name
     )
-    GROUP BY app_name ORDER BY duration;)";
+    GROUP BY name ORDER BY duration;)";
 
   sqlite3_stmt* stmt = nullptr;
 
@@ -157,7 +157,7 @@ bool Saiga::DatabaseManager::fetch(std::vector<Saiga::FilteredProcess> &process_
   while (sqlite3_step(stmt) == SQLITE_ROW) {
     FilteredProcess process;
     
-    process.app_name = reinterpret_cast<const char *>(sqlite3_column_text(stmt, 0));
+    process.name = reinterpret_cast<const char *>(sqlite3_column_text(stmt, 0));
     process.session_count = sqlite3_column_int(stmt, 1);
     process.duration = sqlite3_column_int(stmt, 2);
 
@@ -165,7 +165,7 @@ bool Saiga::DatabaseManager::fetch(std::vector<Saiga::FilteredProcess> &process_
   }
   
   for (auto process : process_list) {
-    spdlog::debug("process: {}, {}, {}", process.app_name, process.session_count, process.duration);
+    spdlog::debug("process: {}, {}, {}", process.name, process.session_count, process.duration);
   }
 
   return true;

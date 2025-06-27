@@ -59,4 +59,7 @@ target_link_libraries(${PROJECT_NAME} PUBLIC
   ear
   sqlite3
   libcurl
+  User32
+  shlwapi
+  dwmapi
 )

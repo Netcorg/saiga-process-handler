@@ -15,7 +15,7 @@ namespace Saiga {
   /// filtered process type that is visualized
   class FilteredProcess {
   public:
-    std::string app_name;
+    std::string name;
     uint32_t session_count = 0U;
     uint32_t duration = 0U;
   };
