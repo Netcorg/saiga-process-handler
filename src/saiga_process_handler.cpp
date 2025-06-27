@@ -132,7 +132,7 @@ void Saiga::ProcessHandler::cycle(void)  {
       instant_process.duration = it->second.time_tag - duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
 
       instant_process_list.insert({it->first, instant_process});
-      m_current_process_list.erase(it);
+      it = m_current_process_list.erase(it);
     }
   }
 
