@@ -70,7 +70,8 @@ static BOOL CALLBACK enumProcess(HWND hwnd, LPARAM lParam) {
   process.name = process_name;
   process.title = converter.to_bytes(window_title.data());
   process.time_tag = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
-
+  process.state = Saiga::ProcessState::CREATED;
+  
   process_list->push_back(process);
 
   return TRUE;
