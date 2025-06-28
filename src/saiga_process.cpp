@@ -53,13 +53,8 @@ bool Saiga::Process::operator!=(const Saiga::Process& process) const {
 
 std::string Saiga::Process::toString(void) const {
   std::stringstream ss;
-
-  ss << pid << ", " <<
-    hwnd << ", " <<
-    title << ", " <<
-    name << ", " <<
-    time_tag << ", " <<
-    (int) state;
+  
+  ss << pid << ", " << hwnd << ", " << time_tag << ", " << name << ", " << title << ", " << (int) state;
 
   return ss.str();
 }

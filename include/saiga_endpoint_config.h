@@ -16,9 +16,9 @@
 #define EP_CONFIG_DEF_TOKEN       ("")
 
 namespace Saiga {
-  enum HTTPProtocol {
-    PROTOCOL_HTTPS,
-    PROTOCOL_HTTP
+  enum class HTTPProtocol {
+    NORMAL = 0x00,
+    SECURE = 0x01
   };
 
   /// @class endpoint configuration
@@ -49,7 +49,7 @@ namespace Saiga {
     /// verbose flag
     long verbose = EP_CONFIG_DEF_VERBOSE;
     /// protocol type
-    HTTPProtocol protocol = PROTOCOL_HTTP;
+    HTTPProtocol protocol = HTTPProtocol::NORMAL;
     /// token
     std::string token = EP_CONFIG_DEF_TOKEN;
   };

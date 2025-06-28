@@ -16,8 +16,7 @@ int main() {
   
   spdlog::set_level(spdlog::level::debug);
 
-  /// @todo pass valid configuration file path
-  if (!process_handler.configure("")) {
+  if (!process_handler.configure("config/config.json")) {
     spdlog::error("could not configure process handler");
     return -1;
   }

@@ -43,7 +43,7 @@ bool Saiga::Endpoint::initialize(const Saiga::EndpointConfiguration &config) {
         curl_easy_setopt(m_curl, CURLOPT_HTTPHEADER, m_header);
         curl_easy_setopt(m_curl, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_2TLS);
 
-        if (PROTOCOL_HTTPS == config.protocol) {
+        if (HTTPProtocol::SECURE == config.protocol) {
           /// @todo verifypeer to 1, verifyhost to 2 for server that has SSL certificate
           curl_easy_setopt(m_curl, CURLOPT_SSL_VERIFYPEER, 0L);
           curl_easy_setopt(m_curl, CURLOPT_SSL_VERIFYHOST, 0L);

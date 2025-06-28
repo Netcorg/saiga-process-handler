@@ -1,7 +1,7 @@
 #include "saiga_endpoint_config.h"
 
 std::string Saiga::EndpointConfiguration::getURL() const {
-  if (PROTOCOL_HTTP == protocol) {
+  if (HTTPProtocol::NORMAL == protocol) {
     return "http://" + ip_address + ":" + std::to_string(port_number) + "/" + extension;
   }
   else {

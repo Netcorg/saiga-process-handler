@@ -1,0 +1,7 @@
+{
+    "db_file": "db/saiga.db",
+    "secure": 0,
+    "ip_address": "127.0.0.1",
+    "port_number": 6666,
+    "extension": "saiga-ui"
+}

@@ -10,6 +10,7 @@ static int empty_callback(void *param, int argc, char **argv, char **col_name) {
 }
 
 static int fetch_list_callback(void *param, int argc, char **argv, char **col_name) {
+  // column count of the table is six
   if (6 != argc) {
     spdlog::error("invalid output from the table, argument count is {}", argc);
     return -1;
@@ -76,7 +77,14 @@ bool Saiga::DatabaseManager::close(void) {
     return false;
   }
 
-  return SQLITE_OK == sqlite3_close_v2(m_database);
+  int error_code = sqlite3_close_v2(m_database);
+
+  if (SQLITE_OK != error_code) {
+    spdlog::error("could not close database, error code {}", error_code);
+    return false;
+  }
+
+  return true;
 }
 
 bool Saiga::DatabaseManager::insert(const Saiga::Process &process) {
@@ -96,8 +104,6 @@ bool Saiga::DatabaseManager::insert(const Saiga::Process &process) {
     process.name << "\', \'" <<
     process.title << "\', \'" <<
     (ProcessState::CREATED == process.state ? "1\');" : "2\');");
-			    
-  spdlog::debug("query string: {}", query.str());
 
   if (SQLITE_OK != (error_code = sqlite3_exec(m_database, query.str().c_str(), empty_callback, nullptr, &err_msg))) {
     if (nullptr == err_msg) {
@@ -179,10 +185,6 @@ bool Saiga::DatabaseManager::fetch(std::vector<Saiga::RefinedProcess> &process_l
     process.duration = sqlite3_column_int(stmt, 2);
 
     process_list.push_back(process);
-  }
-  
-  for (auto process : process_list) {
-    spdlog::debug("process: {}, {}, {}", process.name, process.session_count, process.duration);
   }
 
   return true;

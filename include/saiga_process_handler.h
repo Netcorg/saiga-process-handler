@@ -27,9 +27,9 @@ namespace Saiga {
     /// destructor
     virtual ~ProcessHandler();
     /// function that configures process handler via configuration json
-    /// @param [in] config_file - json configuration file
+    /// @param [in] file_path - json configuration file
     /// @return true if the configuration is done successfully, otherwise false
-    bool configure(const std::string &config_file);
+    bool configure(const std::string &file_path);
     /// function that initializes process handler
     /// @remark it is called by scheduler once automatically
     virtual bool initialize(void) override;

@@ -4,6 +4,8 @@
 #include "rapidjson/prettywriter.h"
 #include "rapidjson/stringbuffer.h"
 
+#include <fstream>
+#include <sstream>
 #include <chrono>
 #include <windows.h>
 #include <cstdlib>
@@ -53,13 +55,13 @@ static BOOL CALLBACK enumProcess(HWND hwnd, LPARAM lParam) {
   GetWindowThreadProcessId(hwnd, &process_id);
   process_handler = OpenProcess(PROCESS_QUERY_INFORMATION | PROCESS_VM_READ, FALSE, process_id);
 
-  if (process_handler == NULL) {
+  if (nullptr == process_handler) {
     return TRUE;
   }
 
   char *process_name = nullptr;
   
-  GetModuleFileNameExA(process_handler, NULL, process_path, sizeof(process_path));
+  GetModuleFileNameExA(process_handler, nullptr, process_path, sizeof(process_path));
   CloseHandle(process_handler);  
   process_name = PathFindFileNameA(process_path);
 
@@ -91,10 +93,32 @@ Saiga::ProcessHandler::~ProcessHandler() {
   m_endpoint.terminate();
 }
 
-bool Saiga::ProcessHandler::configure(const std::string &config_file) {
-  m_preferences.db_file = "../db/saiga.db";
+bool Saiga::ProcessHandler::configure(const std::string &file_path) {
+  if (0 == file_path.length()) {
+    spdlog::error("could not read configuration file path, because the file path is empty");
+    return false;
+  }
 
-  /// @todo set endpoint configuration from config file, for now they're defauilt values
+  std::ifstream config_file(file_path);
+
+  if (!config_file.is_open()) {
+    spdlog::error("could not open configuration file {}", file_path);
+    return false;
+  }
+  
+  std::stringstream buffer;
+  rapidjson::Document document;
+
+  buffer << config_file.rdbuf();
+  document.Parse(buffer.str().c_str());
+
+  m_preferences.db_file = document["db_file"].GetString();
+  m_preferences.endpoint_config.protocol = (HTTPProtocol) document["secure"].GetUint();
+  m_preferences.endpoint_config.ip_address = document["ip_address"].GetString();
+  m_preferences.endpoint_config.port_number = document["port_number"].GetUint();
+  m_preferences.endpoint_config.extension = document["extension"].GetString();
+
+  config_file.close();
   
   return true;
 }
