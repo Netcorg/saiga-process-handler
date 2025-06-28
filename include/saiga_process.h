@@ -49,7 +49,7 @@ namespace Saiga {
     uint32_t pid = 0;
     /// window handler
     uint64_t hwnd = 0U;
-    /// time tag when state changes
+    /// time tag in seconds when state changes
     int64_t time_tag = -1;
     /// name
     std::string name;

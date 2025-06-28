@@ -41,7 +41,7 @@ namespace Saiga {
     /// current process list
     std::map<uint32_t, Process> m_current_process_list;
     /// databaase manager
-    DatabaseManager *m_database_manager;
+    DatabaseManager *m_database_manager = nullptr;
     /// endpoint
     Endpoint m_endpoint;
 

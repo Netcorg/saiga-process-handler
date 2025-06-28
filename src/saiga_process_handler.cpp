@@ -69,7 +69,7 @@ static BOOL CALLBACK enumProcess(HWND hwnd, LPARAM lParam) {
   process.hwnd = (uint64_t)(uintptr_t) hwnd;
   process.name = process_name;
   process.title = converter.to_bytes(window_title.data());
-  process.time_tag = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
+  process.time_tag = duration_cast<seconds>(system_clock::now().time_since_epoch()).count();
   process.state = Saiga::ProcessState::CREATED;
   
   process_list->insert({process_id, process});
@@ -92,7 +92,7 @@ Saiga::ProcessHandler::~ProcessHandler() {
 }
 
 bool Saiga::ProcessHandler::configure(const std::string &config_file) {
-  m_preferences.db_file = "db/saiga.db";
+  m_preferences.db_file = "../db/saiga.db";
 
   /// @todo set endpoint configuration from config file, for now they're defauilt values
   
@@ -119,50 +119,47 @@ bool Saiga::ProcessHandler::initialize(void) {
 void Saiga::ProcessHandler::cycle(void)  {
   std::map<uint32_t, Process> process_list;
   std::map<uint32_t, InstantProcess> instant_process_list;
-  std::string json_text;
 
   // handle process and put into database
   EnumWindows(enumProcess, (LPARAM) &process_list);
 
-  for (auto it = m_current_process_list.begin(); m_current_process_list.end() != it; ++it) {
+  auto it = m_current_process_list.begin();
+
+  while (m_current_process_list.end() != it) {
     if (process_list.end() == process_list.find(it->first)) {
       InstantProcess instant_process;
+      int64_t now = duration_cast<seconds>(system_clock::now().time_since_epoch()).count();
 
       instant_process.name = it->second.name;
-      instant_process.duration = it->second.time_tag - duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
-
+      instant_process.duration = now - it->second.time_tag;
       instant_process_list.insert({it->first, instant_process});
+
+      it->second.time_tag = now;
+      it->second.state = ProcessState::KILLED;
+      m_database_manager->insert(it->second);
+      
       it = m_current_process_list.erase(it);
+    }
+    else {
+      ++it;
     }
   }
 
   for (auto it = process_list.begin(); process_list.end() != it; ++it) {
     if (m_current_process_list.end() == m_current_process_list.find(it->first)) {
+      m_database_manager->insert(it->second);
       m_current_process_list.insert({it->first, it->second});
     }
   }
 
-  /// @todo fill instant_process_list from process list and current process list
-  
-  /// @todo insert into database if the process is created or killed
-  /// it will be on other thread not to delay processing here
-  // m_database_manager->insert(process_list);
-  
-  // fetch database filtered, and convert to JSON
-  /// @todo fetch will be done if a request is arrived from the server
-  // m_database_manager->fetch(instant_process_list, 0, 999999999);
-
   if (0 < instant_process_list.size()) {
-    toJSON(instant_process_list, json_text);
-    // send to server
-    m_endpoint.transmit(json_text);
+    std::string json_text;
 
-    for (auto it = instant_process_list.begin(); it != instant_process_list.end(); ++it) {
-      spdlog::debug("{} - {}", it->second.name, it->second.duration);
-    }
+    toJSON(instant_process_list, json_text);
+    m_endpoint.transmit(json_text);
+   
+    spdlog::debug("json text: {}", json_text);
   }
-  
-  // spdlog::debug("json text: {}", json_text);
   
   return;
 } 

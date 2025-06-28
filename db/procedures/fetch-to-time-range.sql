@@ -1,23 +1,23 @@
 SELECT
-    app_name,
+    name,
     COUNT(*) AS session_count,
     SUM(duration) AS total_duration
 FROM (
     SELECT
-        app1.app_name,
+        app1.name,
         (app2.end_time - app1.start_time) AS duration
     FROM
-        (SELECT pid, ppid, app_name, time AS start_time
+        (SELECT pid, hwnd, name, time_tag AS start_time
          FROM process
-         WHERE state = 1 AND time > 0) AS app1
+         WHERE state = 1 AND time_tag > 0) AS app1
     JOIN
-        (SELECT pid, ppid, app_name, time AS end_time
+        (SELECT pid, hwnd, name, time_tag AS end_time
          FROM process
-         WHERE state = 2 AND time < 123456899) AS app2
+         WHERE state = 2 AND time_tag < 123456899) AS app2
     ON app1.pid = app2.pid
-       AND app1.ppid = app2.ppid
-       AND app1.app_name = app2.app_name
+       AND app1.hwnd = app2.hwnd
+       AND app1.name = app2.name
 )
 
-GROUP BY app_name
+GROUP BY name
 ORDER BY duration;

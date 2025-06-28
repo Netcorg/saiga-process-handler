@@ -60,7 +60,14 @@ bool Saiga::DatabaseManager::open(const std::string &db_file) {
     return false;
   }
   
-  return SQLITE_OK == sqlite3_open_v2(db_file.c_str(), &m_database, SQLITE_OPEN_READWRITE, nullptr);
+  int error_code = sqlite3_open_v2(db_file.c_str(), &m_database, SQLITE_OPEN_READWRITE, nullptr);
+
+  if (SQLITE_OK != error_code) {
+    spdlog::error("could not open database, error code {}", error_code);
+    return false;
+  }
+
+  return true;
 }
 
 bool Saiga::DatabaseManager::close(void) {
@@ -80,19 +87,26 @@ bool Saiga::DatabaseManager::insert(const Saiga::Process &process) {
 
   char *err_msg = nullptr;
   std::stringstream query;
+  int error_code = 0;
 
   query << "INSERT INTO process VALUES (\'" <<
     std::to_string(process.pid) << "\', \'" <<
     std::to_string(process.hwnd) << "\', \'" <<
-    process.time_tag << "\', \'" <<
+    std::to_string(process.time_tag) << "\', \'" <<
     process.name << "\', \'" <<
     process.title << "\', \'" <<
     (ProcessState::CREATED == process.state ? "1\');" : "2\');");
 			    
   spdlog::debug("query string: {}", query.str());
 
-  if (SQLITE_OK != sqlite3_exec(m_database, query.str().c_str(), empty_callback, nullptr, &err_msg)) {
-    spdlog::error("insertion to database failed, {}", err_msg);
+  if (SQLITE_OK != (error_code = sqlite3_exec(m_database, query.str().c_str(), empty_callback, nullptr, &err_msg))) {
+    if (nullptr == err_msg) {
+      spdlog::error("insertion to database failed, error code {}", error_code);
+    }
+    else {
+      spdlog::error("insertion to database failed, error message {}", err_msg);
+    }
+
     return false;
   }
 
@@ -103,7 +117,7 @@ bool Saiga::DatabaseManager::insert(const std::vector<Saiga::Process> &process_l
   bool is_inserted = true;
   
   for (auto process : process_list) {
-    is_inserted = is_inserted & insert(process);
+    is_inserted = is_inserted && insert(process);
   }
 
   // if there is not process to be inserted, it means valid insertion
